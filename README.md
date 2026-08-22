@@ -1,2 +1,2 @@
 # hasanchezb-desing.github.io
-proyectos de consumo local 
+proyectos escolar para venta de flores hechas con limpiapipas
