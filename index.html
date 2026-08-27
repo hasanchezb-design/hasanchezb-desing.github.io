@@ -810,7 +810,7 @@ function actualizarEtiqueta(){
       const linea = document.createElement("div");
       linea.className = "linea-recibo";
       if (item.tipo === "ramo"){
-        linea.innerHTML = `<span>${item.nombre} (${detalleComponentesRamo(item, ", ")}) ×${item.cantidad}</span><span>${formatoCOP(item.precioUnitario * item.cantidad)}</span>`;
+        linea.innerHTML = `<span>${item.nombre} (${detalleComponentesRamo(item, "<br>")}) ×${item.cantidad}</span><span>${formatoCOP(item.precioUnitario * item.cantidad)}</span>`;
       } else {
         const producto = PRODUCTOS.find(p => p.id === item.id);
         if (!producto) return;
