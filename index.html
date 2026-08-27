@@ -160,7 +160,7 @@
   .nota-envio a{ color: var(--teal); font-weight:600; text-decoration:underline; }
 
   /* carrito de productos dentro del formulario */
-  .fila-agregar{ display:grid; grid-template-columns: 1fr 74px auto; gap:10px; }
+  .fila-agregar{ display:grid; grid-template-columns: 1.2fr 1fr 70px auto; gap:10px; }
   .fila-agregar select, .fila-agregar input{
     font-family: var(--f-body); font-size:.95rem; padding:12px 12px;
     border:1.5px solid #d6cdb2; border-radius: var(--radius); background:#fff; color:var(--tinta);
@@ -399,6 +399,7 @@
             <p class="ayuda-ramo">Combina las flores que quieras: el precio del ramo se calcula solo, sumando cada flor que agregues.</p>
             <div class="fila-agregar">
               <select id="flor-ramo"></select>
+              <select id="color-ramo"></select>
               <input type="number" id="cantidad-ramo" min="1" value="1" aria-label="Cantidad para el ramo">
               <button type="button" class="btn btn-secundario" id="btn-agregar-flor-ramo">Añadir al ramo</button>
             </div>
@@ -415,6 +416,7 @@
             <label for="producto-agregar">Flores y otros productos sueltos</label>
             <div class="fila-agregar">
               <select id="producto-agregar"></select>
+              <select id="color-agregar"></select>
               <input type="number" id="cantidad-agregar" min="1" value="1" aria-label="Cantidad">
               <button type="button" class="btn btn-secundario" id="btn-agregar-producto">Añadir</button>
             </div>
@@ -480,13 +482,25 @@ const PRODUCTOS = [
   { id: "llaveroMargarita", nombre: "Llavero de Margarita", precio: 4000,  color: "var(--teal)", categoria: "llavero", desc: "Llavero Pétalos anchos y llenos" },
   { id: "llaveroRosas", nombre: "Llavero de Rosas", precio: 5000,  color: "var(--coral)", categoria: "llavero", desc: "Llavero Pétalos de rosas y llenos." },
   { id: "cajaGirasol",   nombre: "Caja Girasol",    precio: 23000, color: "var(--mostaza)",   categoria: "caja", desc: "Caja con Gerasol. Con mensaje que desees" },
-  { id: "tulipan",   nombre: "Tulipan",    precio: 7000, color: "var(--mostaza)",   categoria: "flor", desc: "Blanco, Rosado (Oscuro o Claro), Azul, Morado (Oscuro o Claro), Vinotinto" },
-  { id: "lirio", nombre: "Lirio de limpiapipas", precio: 8000,  color: "var(--mostaza)", categoria: "flor", desc: "Blanco, Rosado(oscuro y clarito), Azul, Morado(oscuro y clarito), Rojo" },
-  { id: "hibisco", nombre: "Hibisco de limpiapipas", precio: 8000,  color: "var(--mostaza)", categoria: "flor", desc: "Naranja con Rosado oscuro, Vinotinto con Blanco, Blanco con Vinotinto, Azul con Morado, Rosado clarito con Oscuro, Rosado oscuro con Clarito, Azul con Blanco" },
-  { id: "lavanda", nombre: "Lavanda de limpiapipas", precio: 4000,  color: "var(--mostaza)", categoria: "flor", desc: "Morado(oscuro y clarito), Rosado clarito y oscuro, Azul" },
-  { id: "rosa",      nombre: "Rosa de limpiapipas",       precio: 6000, color: "var(--rosa)",    categoria: "flor", desc: "Roja, Vinotinto, Rosado oscuro" },
+  { id: "tulipan",   nombre: "Tulipan",    precio: 7000, color: "var(--mostaza)",   categoria: "flor",
+    colores: ["Blanco","Rosado oscuro","Rosado claro","Azul","Morado oscuro","Morado claro","Vinotinto"],
+    desc: "Blanco, Rosado (Oscuro o Claro), Azul, Morado (Oscuro o Claro), Vinotinto" },
+  { id: "lirio", nombre: "Lirio de limpiapipas", precio: 8000,  color: "var(--mostaza)", categoria: "flor",
+    colores: ["Blanco","Rosado oscuro","Rosado claro","Azul","Morado oscuro","Morado claro","Rojo"],
+    desc: "Blanco, Rosado(oscuro y clarito), Azul, Morado(oscuro y clarito), Rojo" },
+  { id: "hibisco", nombre: "Hibisco de limpiapipas", precio: 8000,  color: "var(--mostaza)", categoria: "flor",
+    colores: ["Naranja con rosado oscuro","Vinotinto con blanco","Blanco con vinotinto","Azul con morado","Rosado claro con oscuro","Rosado oscuro con claro","Azul con blanco"],
+    desc: "Naranja con Rosado oscuro, Vinotinto con Blanco, Blanco con Vinotinto, Azul con Morado, Rosado clarito con Oscuro, Rosado oscuro con Clarito, Azul con Blanco" },
+  { id: "lavanda", nombre: "Lavanda de limpiapipas", precio: 4000,  color: "var(--mostaza)", categoria: "flor",
+    colores: ["Morado oscuro","Morado claro","Rosado claro","Rosado oscuro","Azul"],
+    desc: "Morado(oscuro y clarito), Rosado clarito y oscuro, Azul" },
+  { id: "rosa",      nombre: "Rosa de limpiapipas",       precio: 6000, color: "var(--rosa)",    categoria: "flor",
+    colores: ["Roja","Vinotinto","Rosado oscuro"],
+    desc: "Roja, Vinotinto, Rosado oscuro" },
 ];
-/* Nota: solo los productos con categoria "flor" aparecen en el armador de ramos de abajo. */
+/* Nota: solo los productos con categoria "flor" aparecen en el armador de ramos de abajo.
+   El arreglo "colores" define las opciones del selector de color; si un producto no
+   tiene "colores", el selector se deshabilita automáticamente para ese producto. */
 /* ============================================================ */
 
 const formatoCOP = n => "$" + n.toLocaleString("es-CO");
@@ -514,7 +528,7 @@ function pintarCatalogo(){
       <h3>${p.nombre}</h3>
       <p>${p.desc}</p>
       <span class="precio">${formatoCOP(p.precio)}</span>
-      <a href="#pedido" class="btn btn-primario btn-pedir" data-id="${p.id}">Añadir al pedido</a>
+      <a href="#pedido" class="btn btn-primario btn-pedir" data-id="${p.id}">Elegir esta flor</a>
     `;
     grid.appendChild(card);
 
@@ -534,40 +548,76 @@ function pintarCatalogo(){
   grid.querySelectorAll(".btn-pedir").forEach(btn => {
     btn.addEventListener("click", (e) => {
       e.preventDefault();
-      agregarAlCarrito(btn.dataset.id, 1);
+      const select = document.getElementById("producto-agregar");
+      select.value = btn.dataset.id;
+      poblarSelectColor(document.getElementById("color-agregar"), obtenerProducto(select.value));
+      document.getElementById("pedido").scrollIntoView({ behavior: "smooth" });
     });
+  });
+
+  poblarSelectColor(document.getElementById("color-agregar"), obtenerProducto(select.value));
+  poblarSelectColor(document.getElementById("color-ramo"), obtenerProducto(selectRamo.value));
+}
+
+function obtenerProducto(id){
+  return PRODUCTOS.find(p => p.id === id);
+}
+
+/* Llena el select de color según las variantes del producto elegido.
+   Si el producto no tiene "colores" definidos, el select queda deshabilitado. */
+function poblarSelectColor(selectColor, producto){
+  selectColor.innerHTML = "";
+  const colores = producto && producto.colores && producto.colores.length ? producto.colores : null;
+
+  if (!colores){
+    selectColor.disabled = true;
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "Sin variantes de color";
+    selectColor.appendChild(opt);
+    return;
+  }
+
+  selectColor.disabled = false;
+  colores.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    selectColor.appendChild(opt);
   });
 }
 
-function agregarAlCarrito(id, cantidad){
+function agregarAlCarrito(id, cantidad, color){
   cantidad = Math.max(1, parseInt(cantidad, 10) || 1);
-  const existente = carrito.find(item => item.tipo === "producto" && item.id === id);
+  const clave = id + "::" + (color || "");
+  const existente = carrito.find(item => item.tipo === "producto" && item.clave === clave);
   if (existente){
     existente.cantidad += cantidad;
   } else {
-    carrito.push({ tipo: "producto", id, cantidad });
+    carrito.push({ tipo: "producto", clave, id, cantidad, color: color || null });
   }
   document.getElementById("error-carrito").hidden = true;
   renderCarrito();
 }
 
 // ---- Armador de ramo personalizado ----
-let ramoEnConstruccion = []; // [{ id, cantidad }] mientras se arma, antes de añadirlo al pedido
+let ramoEnConstruccion = []; // [{ clave, id, cantidad, color }] mientras se arma, antes de añadirlo al pedido
 let contadorRamo = 0;
 
-function agregarFlorARamo(id, cantidad){
+function agregarFlorARamo(id, cantidad, color){
   cantidad = Math.max(1, parseInt(cantidad, 10) || 1);
-  const existente = ramoEnConstruccion.find(item => item.id === id);
+  const clave = id + "::" + (color || "");
+  const existente = ramoEnConstruccion.find(item => item.clave === clave);
   if (existente){
     existente.cantidad += cantidad;
   } else {
-    ramoEnConstruccion.push({ id, cantidad });
+    ramoEnConstruccion.push({ clave, id, cantidad, color: color || null });
   }
   renderRamoTemp();
 }
 
-function quitarFlorDeRamo(id){
-  ramoEnConstruccion = ramoEnConstruccion.filter(item => item.id !== id);
+function quitarFlorDeRamo(clave){
+  ramoEnConstruccion = ramoEnConstruccion.filter(item => item.clave !== clave);
   renderRamoTemp();
 }
 
@@ -602,16 +652,16 @@ function renderRamoTemp(){
     li.innerHTML = `
       <span class="item-info">
         <span class="punto-color" style="background:${producto.color}"></span>
-        ${producto.nombre} <span class="item-cant">×${item.cantidad}</span>
+        ${producto.nombre}${item.color ? " · " + item.color : ""} <span class="item-cant">×${item.cantidad}</span>
       </span>
       <span class="item-subtotal">${formatoCOP(producto.precio * item.cantidad)}</span>
-      <button type="button" class="btn-quitar" aria-label="Quitar ${producto.nombre} del ramo" data-id="${item.id}">✕</button>
+      <button type="button" class="btn-quitar" aria-label="Quitar ${producto.nombre} del ramo" data-clave="${item.clave}">✕</button>
     `;
     lista.appendChild(li);
   });
 
   lista.querySelectorAll(".btn-quitar").forEach(btn => {
-    btn.addEventListener("click", () => quitarFlorDeRamo(btn.dataset.id));
+    btn.addEventListener("click", () => quitarFlorDeRamo(btn.dataset.clave));
   });
 
   filaSubtotal.hidden = false;
@@ -622,9 +672,11 @@ function renderRamoTemp(){
 function agregarRamoAlPedido(){
   if (ramoEnConstruccion.length === 0) return;
   contadorRamo++;
+  const clave = "ramo-" + contadorRamo;
   carrito.push({
     tipo: "ramo",
-    id: "ramo-" + contadorRamo,
+    clave,
+    id: clave,
     nombre: "Ramo personalizado",
     componentes: ramoEnConstruccion.map(c => ({ ...c })),
     precioUnitario: calcularSubtotalRamo(),
@@ -637,17 +689,17 @@ function agregarRamoAlPedido(){
 }
 // ---- fin armador de ramo ----
 
-function quitarDelCarrito(id){
-  carrito = carrito.filter(item => item.id !== id);
+function quitarDelCarrito(clave){
+  carrito = carrito.filter(item => item.clave !== clave);
   renderCarrito();
 }
 
-function cambiarCantidadCarrito(id, delta){
-  const item = carrito.find(i => i.id === id);
+function cambiarCantidadCarrito(clave, delta){
+  const item = carrito.find(i => i.clave === clave);
   if (!item) return;
   item.cantidad += delta;
   if (item.cantidad <= 0){
-    quitarDelCarrito(id);
+    quitarDelCarrito(clave);
   } else {
     renderCarrito();
   }
@@ -667,7 +719,9 @@ function detalleComponentesRamo(item, separador){
   return item.componentes
     .map(c => {
       const producto = PRODUCTOS.find(p => p.id === c.id);
-      return producto ? `${producto.nombre} ×${c.cantidad}` : null;
+      if (!producto) return null;
+      const etiquetaColor = c.color ? ` (${c.color})` : "";
+      return `${producto.nombre}${etiquetaColor} ×${c.cantidad}`;
     })
     .filter(Boolean)
     .join(separador);
@@ -697,21 +751,22 @@ function renderCarrito(){
               ${item.nombre} <span class="item-cant">×${item.cantidad}</span>
             </span>
             <span class="item-subtotal">${formatoCOP(item.precioUnitario * item.cantidad)}</span>
-            <button type="button" class="btn-quitar" aria-label="Quitar ramo" data-id="${item.id}">✕</button>
+            <button type="button" class="btn-quitar" aria-label="Quitar ramo" data-clave="${item.clave}">✕</button>
           </div>
           <div class="item-detalle-ramo">${detalleComponentesRamo(item, ", ")}</div>
         `;
       } else {
         const producto = PRODUCTOS.find(p => p.id === item.id);
         if (!producto) return;
+        const etiquetaColor = item.color ? ` · ${item.color}` : "";
         li.className = "item-carrito";
         li.innerHTML = `
           <span class="item-info">
             <span class="punto-color" style="background:${producto.color}"></span>
-            ${producto.nombre} <span class="item-cant">×${item.cantidad}</span>
+            ${producto.nombre}${etiquetaColor} <span class="item-cant">×${item.cantidad}</span>
           </span>
           <span class="item-subtotal">${formatoCOP(producto.precio * item.cantidad)}</span>
-          <button type="button" class="btn-quitar" aria-label="Quitar ${producto.nombre}" data-id="${item.id}">✕</button>
+          <button type="button" class="btn-quitar" aria-label="Quitar ${producto.nombre}" data-clave="${item.clave}">✕</button>
         `;
       }
       lista.appendChild(li);
@@ -719,7 +774,7 @@ function renderCarrito(){
   }
 
   lista.querySelectorAll(".btn-quitar").forEach(btn => {
-    btn.addEventListener("click", () => quitarDelCarrito(btn.dataset.id));
+    btn.addEventListener("click", () => quitarDelCarrito(btn.dataset.clave));
   });
 
   actualizarEtiqueta();
@@ -749,7 +804,8 @@ function actualizarEtiqueta(){
       } else {
         const producto = PRODUCTOS.find(p => p.id === item.id);
         if (!producto) return;
-        linea.innerHTML = `<span>${producto.nombre} ×${item.cantidad}</span><span>${formatoCOP(producto.precio * item.cantidad)}</span>`;
+        const etiquetaColor = item.color ? ` (${item.color})` : "";
+        linea.innerHTML = `<span>${producto.nombre}${etiquetaColor} ×${item.cantidad}</span><span>${formatoCOP(producto.precio * item.cantidad)}</span>`;
       }
       contenedor.appendChild(linea);
     });
@@ -771,7 +827,8 @@ function armarMensajeWhatsApp(){
     }
     const producto = PRODUCTOS.find(p => p.id === item.id);
     if (!producto) return null;
-    return `  • ${item.cantidad}x ${producto.nombre} — ${formatoCOP(producto.precio * item.cantidad)}`;
+    const etiquetaColor = item.color ? ` (${item.color})` : "";
+    return `  • ${item.cantidad}x ${producto.nombre}${etiquetaColor} — ${formatoCOP(producto.precio * item.cantidad)}`;
   }).filter(Boolean);
 
   const lineas = [
@@ -800,16 +857,26 @@ document.addEventListener("DOMContentLoaded", () => {
   renderCarrito();
   renderRamoTemp();
 
+  document.getElementById("producto-agregar").addEventListener("change", (e) => {
+    poblarSelectColor(document.getElementById("color-agregar"), obtenerProducto(e.target.value));
+  });
+
+  document.getElementById("flor-ramo").addEventListener("change", (e) => {
+    poblarSelectColor(document.getElementById("color-ramo"), obtenerProducto(e.target.value));
+  });
+
   document.getElementById("btn-agregar-producto").addEventListener("click", () => {
     const id = document.getElementById("producto-agregar").value;
     const cantidad = document.getElementById("cantidad-agregar").value;
-    agregarAlCarrito(id, cantidad);
+    const color = document.getElementById("color-agregar").value;
+    agregarAlCarrito(id, cantidad, color);
   });
 
   document.getElementById("btn-agregar-flor-ramo").addEventListener("click", () => {
     const id = document.getElementById("flor-ramo").value;
     const cantidad = document.getElementById("cantidad-ramo").value;
-    agregarFlorARamo(id, cantidad);
+    const color = document.getElementById("color-ramo").value;
+    agregarFlorARamo(id, cantidad, color);
   });
 
   document.getElementById("btn-agregar-ramo-pedido").addEventListener("click", agregarRamoAlPedido);
