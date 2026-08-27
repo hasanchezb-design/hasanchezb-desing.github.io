@@ -167,6 +167,7 @@
   }
   .btn-secundario{ background: var(--berenjena); color: var(--crema); padding:12px 18px; font-size:.9rem; }
   .btn-secundario:hover{ background: var(--berenjena-luz); }
+  .campo-error{ border-color:#a3392a !important; box-shadow:0 0 0 2px rgba(163,57,42,.15); }
   .lista-carrito{ list-style:none; margin:14px 0 0; padding:0; display:flex; flex-direction:column; gap:8px; }
   .lista-carrito li{
     display:flex; align-items:center; justify-content:space-between; gap:10px;
@@ -475,13 +476,12 @@
    2) PRODUCTOS: agrega, quita o cambia precios de flores aquí.
       El catálogo y el formulario se arman solos a partir de esta lista.
    ============================================================ */
-const NUMERO_WHATSAPP = "573102615393"; // <-- reemplaza por tu número real
+const NUMERO_WHATSAPP = "573106184899"; // <-- reemplaza por tu número real
 
 const PRODUCTOS = [
-  { id: "llaveroGirasol", nombre: "Llavero de Girasol", precio: 4000,  color: "var(--mostaza)", categoria: "llavero", desc: "Llavero Pétalos anchos y llenos, con centro marcado en un color de contraste." },
-  { id: "llaveroMargarita", nombre: "Llavero de Margarita", precio: 4000,  color: "var(--teal)", categoria: "llavero", desc: "Llavero Pétalos anchos y llenos" },
-  { id: "llaveroRosas", nombre: "Llavero de Rosas", precio: 5000,  color: "var(--coral)", categoria: "llavero", desc: "Llavero Pétalos de rosas y llenos." },
-  { id: "cajaGirasol",   nombre: "Caja Girasol",    precio: 23000, color: "var(--mostaza)",   categoria: "caja", desc: "Caja con Gerasol. Con mensaje que desees" },
+  { id: "rosa",      nombre: "Rosa de limpiapipas",       precio: 6000, color: "var(--rosa)",    categoria: "flor",
+    colores: ["Roja","Vinotinto","Rosado oscuro"],
+    desc: "Roja, Vinotinto, Rosado oscuro" },
   { id: "tulipan",   nombre: "Tulipan",    precio: 7000, color: "var(--mostaza)",   categoria: "flor",
     colores: ["Blanco","Rosado oscuro","Rosado claro","Azul","Morado oscuro","Morado claro","Vinotinto"],
     desc: "Blanco, Rosado (Oscuro o Claro), Azul, Morado (Oscuro o Claro), Vinotinto" },
@@ -494,9 +494,10 @@ const PRODUCTOS = [
   { id: "lavanda", nombre: "Lavanda de limpiapipas", precio: 4000,  color: "var(--mostaza)", categoria: "flor",
     colores: ["Morado oscuro","Morado claro","Rosado claro","Rosado oscuro","Azul"],
     desc: "Morado(oscuro y clarito), Rosado clarito y oscuro, Azul" },
-  { id: "rosa",      nombre: "Rosa de limpiapipas",       precio: 6000, color: "var(--rosa)",    categoria: "flor",
-    colores: ["Roja","Vinotinto","Rosado oscuro"],
-    desc: "Roja, Vinotinto, Rosado oscuro" },
+  { id: "llaveroGirasol", nombre: "Llavero de Girasol", precio: 4000,  color: "var(--mostaza)", categoria: "llavero", desc: "Llavero Pétalos anchos y llenos, con centro marcado en un color de contraste." },
+  { id: "llaveroMargarita", nombre: "Llavero de Margarita", precio: 4000,  color: "var(--teal)", categoria: "llavero", desc: "Llavero Pétalos anchos y llenos" },
+  { id: "llaveroRosas", nombre: "Llavero de Rosas", precio: 5000,  color: "var(--coral)", categoria: "llavero", desc: "Llavero Pétalos de rosas y llenos." },
+  { id: "cajaGirasol",   nombre: "Caja Girasol",    precio: 23000, color: "var(--mostaza)",   categoria: "caja", desc: "Caja con Gerasol. Con mensaje que desees" },
 ];
 /* Nota: solo los productos con categoria "flor" aparecen en el armador de ramos de abajo.
    El arreglo "colores" define las opciones del selector de color; si un producto no
@@ -579,6 +580,15 @@ function poblarSelectColor(selectColor, producto){
   }
 
   selectColor.disabled = false;
+  selectColor.classList.remove("campo-error");
+
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Selecciona un color";
+  placeholder.disabled = true;
+  placeholder.selected = true;
+  selectColor.appendChild(placeholder);
+
   colores.forEach(c => {
     const opt = document.createElement("option");
     opt.value = c;
@@ -865,18 +875,36 @@ document.addEventListener("DOMContentLoaded", () => {
     poblarSelectColor(document.getElementById("color-ramo"), obtenerProducto(e.target.value));
   });
 
+  document.getElementById("color-agregar").addEventListener("change", (e) => {
+    if (e.target.value) e.target.classList.remove("campo-error");
+  });
+
+  document.getElementById("color-ramo").addEventListener("change", (e) => {
+    if (e.target.value) e.target.classList.remove("campo-error");
+  });
+
   document.getElementById("btn-agregar-producto").addEventListener("click", () => {
     const id = document.getElementById("producto-agregar").value;
     const cantidad = document.getElementById("cantidad-agregar").value;
-    const color = document.getElementById("color-agregar").value;
-    agregarAlCarrito(id, cantidad, color);
+    const selectColor = document.getElementById("color-agregar");
+    if (!selectColor.disabled && selectColor.value === ""){
+      selectColor.classList.add("campo-error");
+      selectColor.focus();
+      return;
+    }
+    agregarAlCarrito(id, cantidad, selectColor.value);
   });
 
   document.getElementById("btn-agregar-flor-ramo").addEventListener("click", () => {
     const id = document.getElementById("flor-ramo").value;
     const cantidad = document.getElementById("cantidad-ramo").value;
-    const color = document.getElementById("color-ramo").value;
-    agregarFlorARamo(id, cantidad, color);
+    const selectColor = document.getElementById("color-ramo");
+    if (!selectColor.disabled && selectColor.value === ""){
+      selectColor.classList.add("campo-error");
+      selectColor.focus();
+      return;
+    }
+    agregarFlorARamo(id, cantidad, selectColor.value);
   });
 
   document.getElementById("btn-agregar-ramo-pedido").addEventListener("click", agregarRamoAlPedido);
